@@ -1,28 +1,40 @@
+import "dotenv/config";
 import express from "express";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@as-integrations/express4";
-
+import { prismaClient } from "./lib/db.js";
 const init = async () => {
   const app = express();
   const port = Number(process.env.PORT) || 8000;
 
   const typeDefs = `#graphql
     type Query {
-      hello(name: String): String
+      
       hey(name: String): String
     }
+      type Mutation {
+      createUser(email:String!, name:String!, password: String!): Boolean
+      }
   `;
 
   const resolvers = {
     Query: {
-      hello: (_: any, { name }: { name: String }) => `Hello ${name}!`,
+
       hey: (_: any, { name }: { name: String }) => `Hey ${name}!, how are you doing?`,
     },
+    Mutation: {
+      createUser: async (_: any, { name, email, password }: { name: string, email: string, password: string }) => {
+        await prismaClient.user.create({
+          data: { email, name, password, salt: "random_salt" },
+        })
+        return true;
+      }
+    }
   };
 
   const server = new ApolloServer({
     typeDefs,
-    resolvers, 
+    resolvers,
   });
 
   await server.start();
