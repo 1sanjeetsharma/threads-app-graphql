@@ -3,6 +3,7 @@ import { prismaClient } from "../lib/db.js";
 import {User} from "./user/index.js"
 async function createApolloServer(){
      const typeDefs = `#graphql
+        ${User.typeDefs}
         type Query {
           ${User.queries}
         }
